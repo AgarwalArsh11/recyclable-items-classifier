@@ -1,41 +1,77 @@
-# Grayscale Image Classifier: Bottles, Cans, and Cups
+ Plastic Waste Image Classification using MobileNetV2
 
-This project involves training a deep learning model to classify grayscale images into three categories: **plastic bottles**, **plastic cans**, and **cups** (plastic or paper). The goal is to use this model in a real-world machine setup controlled by an ESP32-CAM module.
+This project builds a deep learning model using **MobileNetV2** to classify images of different types of plastic waste. It leverages **transfer learning** and **image augmentation** to train on a custom dataset stored on Google Drive. The model is trained in **Google Colab** and can be used for waste recognition tasks like smart recycling systems.
 
-## Project Objective
+---
 
-The model detects whether an image belongs to one of the three supported classes. If it does, the system sends a positive response to trigger a machine mechanism that opens a shutter and generates a QR code. If not, the input is ignored.
+## 📁 Dataset Structure
 
-## Dataset
+The dataset is expected to be organized into subfolders under:
 
-- Images: Grayscale (100x100 pixels)
-- Classes: `bottle`, `can`, `cup`
-- Structure: Data is organized into subfolders for each class
-- Source: Collected from multiple sources, preprocessed, and manually labeled
+/plastic_project/dataset/
+├── bottle/
+├── can/
+├── cup/
+├── paper/
+├── ... (any additional classes)
 
-## Model Details
+Each subfolder contains training images for that category.
 
-- Framework: TensorFlow and Keras
-- Architecture: CNN
-- Input Shape: 100x100x1 (grayscale)
-- Output: 3-class softmax
+---
+
+## 🧠 Model Architecture
+
+- **Base Model**: [MobileNetV2](https://arxiv.org/abs/1801.04381) (pretrained on ImageNet)
+- **Custom Layers**:
+  - Global Average Pooling
+  - Dropout (0.3)
+  - Dense Softmax for classification
+
+---
+
+## 🚀 Training Pipeline
+
+- Framework: TensorFlow / Keras
+- Preprocessing: Image Augmentation with `ImageDataGenerator`
+- Split: 80% train / 20% validation
+- Optimizer: Adam (lr=1e-4)
 - Loss: Categorical Crossentropy
-- Optimizer: Adam
-- Accuracy:
-  - Training: ~99%
-  - Validation: ~84%
-- Saved Model: `final_balanced_grayscale_model_with_unknown.h5`
+- Metrics: Accuracy
+- Class Imbalance: Handled using `compute_class_weight`
+- Callbacks:
+  - `EarlyStopping` (monitoring `val_loss`)
+  - `ModelCheckpoint` (saves best model)
 
-## Usage
+---
 
-The notebook used for training is `grayscale_cup_classifier.ipynb`. You can test the trained model using new grayscale images by loading the model and running inference with OpenCV and NumPy.
+## 📈 Visualization
 
-## Deployment
+Training and validation **accuracy** and **loss** are plotted at the end of training to analyze model performance.
 
-The trained model is intended for cloud deployment. An ESP32-CAM module captures and sends images to the cloud endpoint. Based on the model’s response, the hardware either activates or ignores the input.
+---
 
-## Files
+## ✅ Output Files
 
-- `grayscale_cup_classifier.ipynb` – Google Colab training notebook
-- `final_balanced_grayscale_model_with_unknown.h5` – Saved model
-- `README.md` – Project description
+The following files are generated and saved to Google Drive:
+
+- `final_balanced_rgb_model_with_unknown.h5`: Best model based on validation loss
+- `final_balanced_rgb_model_with_unknown.h5`: Final model after all epochs
+
+---
+
+## 🧪 Prediction
+
+A helper function `load_and_predict(img_path)` is included to:
+- Load any image
+- Preprocess and predict the class
+- Display the image along with its predicted label and probabilities
+
+Example:
+
+python
+load_and_predict("/content/drive/MyDrive/plastic_project/test_images/image_1.jpg")
+
+📊 Sample Output
+
+Predicted probabilities for image_1.jpg: [0.01 0.02 0.95 0.01 0.01]
+Prediction: plastic_cup
